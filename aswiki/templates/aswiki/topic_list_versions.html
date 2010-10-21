@@ -1,0 +1,39 @@
+{% extends "aswiki/base.html" %}
+{% load i18n asutils aswikitags %}
+{# You will likely NEED to override this template with your own #}
+{% block title %}Previous Versions of {{ topic.name }}{% endblock title %}
+{% block hierarchy %}{{ block.super }}&raquo;&nbsp;<a href="{% url aswiki_topic_index %}">Topics</a>{% topic_hierarchy topic %}&raquo;&nbsp;<a href="{% url aswiki_topic_list_versions topic.name %}">Versions</a>{% endblock %}
+{% block content_title %}<h1>Previous Versions of {{ topic.name }}</h1>{% endblock content_title %}
+{% block content %}
+  {% if object_list %}
+    {% if is_paginated %}
+      <div class="paginator">{% paginator %}</div>
+    {% endif %}
+
+    <table class="listing">
+      <thead>
+        <tr class="header">
+          <th>Version</th>
+          <th>Author</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for topic_version in object_list %}
+          <tr class="{% cycle odd,even %}">
+            <td><a href="{{ topic_version.get_absolute_url }}">{{ topic_version.normalized_created }}</a></td>
+            <td>{{ topic_version.author }}</td>
+            <td>{{ topic_version.reason }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if is_paginated %}
+      <div class="paginator">{% paginator %}</div>
+    {% endif %}
+  {% else %}
+    <p>There are no previous versions of this topic.</p>
+  {% endif %}
+{% endblock content %}
+

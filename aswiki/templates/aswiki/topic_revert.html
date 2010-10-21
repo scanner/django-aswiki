@@ -1,0 +1,16 @@
+{% extends "aswiki/base.html" %}
+{% load i18n asutils aswikitags %}
+{# You will likely NEED to override this template with your own #}
+{% block title %}Revert to {{ topic_version }}{% endblock title %}
+{% block hierarchy %}{{ block.super }}&nbsp;&raquo;&nbsp;<a href="{% url aswiki_topic_index %}">Topics</a>{% topic_hierarchy topic %}&nbsp;&raquo;&nbsp;<a href="{% url aswiki_topic_list_versions topic.name %}">Versions of {{ topic.name }}</a>&nbsp;&raquo;&nbsp;<a href="{{ topic_version.get_absolute_url }}">{{ topic_version }}</a>&nbsp;&raquo;&nbsp;<a href="{% url aswiki_topic_revert topic.name,topic_version.normalized_created %}">Revert</a>{% endblock %}
+{% block content_title %}<h1>Revert to {{ topic_version }}</h1>{% endblock content_title %}
+{% block content %}
+<form method="post" id="revert" action="{% url aswiki_topic_revert topic.name,topic_version.normalized_created %}">
+  {{ form.as_p }}
+  {% ifnotequal topic.write_lock.owner user %}
+    <p><strong>NOTE:</strong> Topic is currently being edited by {{ topic.write_lock.owner }}</p>
+  {% endifnotequal %}
+  <input type="submit" name="submit" value="Submit" />
+  <input type="submit" name="submit" value="Cancel" />
+</form>
+{% endblock content %}

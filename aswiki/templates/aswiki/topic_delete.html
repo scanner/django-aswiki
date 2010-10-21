@@ -1,0 +1,36 @@
+{% extends "aswiki/base.html" %}
+{% load i18n asutils aswikitags %}
+{# You will likely NEED to override this template with your own #}
+{% block title %}Delete: {{ topic }}{% endblock title %}
+{% block hierarchy %}{{ block.super }}&raquo;&nbsp;<a href="{% url aswiki_topic_index %}">Topics</a>{% topic_hierarchy topic %}&raquo;&nbsp;<a href="{% url aswiki_topic_delete topic.name %}">Delete</a>{% endblock %}
+{% block content_title %}<h1>Delete {{ topic }}</h1>{% endblock content_title %}
+{% block content %}
+  <div class="wiki_content_form">
+    <form method="POST" id="form_content" action="{% url aswiki_topic_delete topic.name %}">
+      <table>
+      {{ form.as_table }}
+      </table>
+      {% ifnotequal topic.write_lock.owner user %}
+      <p><strong>NOTE:</strong> Topic is currently being edited by {{ topic.write_lock.owner }}</p>
+      {% endifnotequal %}
+      <input type="submit" name="submit" value="Delete" />
+      <input type="submit" name="submit" value="Cancel" />
+    </form>
+  </div>
+   <div class="wiki_content">
+     {{ topic.content_formatted|safe }}
+   </div>
+   <div class="wiki_info">
+     Author: {% username_or_wikipage topic.author %}<br />
+     Last modified: {{ topic.modified|tz_std_date_ago:user }}<br />
+     Last edit reason: {{ topic.reason }}<br />
+   </div>
+   <div class="wiki_info">
+     Topics that link to this topic:<br />
+     {% for topic_ref in topic.referenced_by.all %}
+       {% if topic_ref.permitted %}
+         <a href="{{ topic_ref.get_absolute_url }}">{{ topic_ref.name }}</a>
+       {% endif %}
+     {% endfor %}
+   </div>
+{% endblock content %}

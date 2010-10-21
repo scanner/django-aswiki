@@ -1,0 +1,20 @@
+;; Object management/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "management/"
+  :tables (list 
+   (semanticdb-table "__init__.py"
+    :major-mode 'python-mode
+    :tags '(("\"\"\"
+The management command suite for the aswiki app.
+
+Very little happens here. Main purpose is to register some
+notification types if you have the notification app installed.
+\"\"\"" code nil nil [1 180]) ("django.db.models.signals" include nil (dependency-file none) [181 229]) ("try" code nil nil [469 1141]))
+    :file "__init__.py"
+    :pointmax 1142
+    )
+   )
+  :file "semantic.cache"
+  :semantic-tag-version "2.0pre4"
+  :semanticdb-version "2.0pre4"
+  )

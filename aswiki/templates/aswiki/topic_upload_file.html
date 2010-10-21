@@ -1,0 +1,20 @@
+{% extends "aswiki/base.html" %}
+{% load i18n asutils aswikitags %}
+{# You will likely NEED to override this template with your own #}
+{% block title %}Upload File: {{ topic.name }}{% endblock title %}
+{% block hierarchy %}{{ block.super }}&raquo;&nbsp;<a href="{% url aswiki_topic_index %}">Topics</a>{% topic_hierarchy topic %}&raquo;&nbsp;<a href="{% url aswiki_topic_upload_file topic.name %}">Upload File</a>{% endblock %}
+{% block content_title %}<h1>Uploading an file for {{ topic.name }}</h1>{% endblock content_title %}
+{% block content %}
+{% if preview %}
+  <h2>Preview</h2>
+  <div class="wiki_content">{{ preview|creole }}</div>
+{% endif %}
+
+  <div class="wiki_content_form">
+    <form method="POST" enctype="multipart/form-data" id="form_content" action="{% url aswiki_topic_upload_file topic.name %}">
+      {{ form.as_p }}
+      <input type="submit" name="submit" value="Submit" />
+      <input type="submit" name="submit" value="Cancel" />
+    </form>
+  </div>
+{% endblock content %}

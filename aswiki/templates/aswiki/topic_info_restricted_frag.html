@@ -1,0 +1,7 @@
+{# A fragment for rendering a restricted Topic's vitals in a table #}
+{# we have the 'topic' in our context. #}
+{% load asutils %}
+<td>Topic Restricted - Insufficient Permissions</td>
+<td></td>
+<td></td>
+<td>{% if topic.locked %}{% icon "lock" "Topic is locked" %}{% endif %}{% icon "key" "Your access to this Topic is restricted" %}</td>

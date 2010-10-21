@@ -1,0 +1,41 @@
+{% extends "aswiki/base.html" %}
+{% load i18n asutils aswikitags %}
+{# You will likely NEED to override this template with your own #}
+{% block hierarchy %}{{ block.super }}&raquo;&nbsp;<a href="{% url aswiki_topic_index %}">Topics</a>{% endblock %}
+{% block content_title %}<h1>Topic List</h1>{% endblock content_title %}
+{% block content %}
+  {% if query %}
+    <h2>
+      <span class="highlight">Results for searching for '{{ query }}'</span><br />
+    </h2>
+  {% endif %}
+  {% if object_list %}
+    {% if is_paginated %}
+      <div class="paginator">{% paginator %}</div>
+    {% endif %}
+
+    <table class="listing">
+      <thead>
+        <tr class="header">
+          <th>Topic</th>
+          <th>Author</th>
+          <th>Modified</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for topic in object_list %}
+          <tr class="{% cycle odd,even %}">
+            {% topic_info topic %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if is_paginated %}
+      <div class="paginator">{% paginator %}</div>
+    {% endif %}
+  {% else %}
+    <p>There are currently no topics.</p>
+  {% endif %}
+{% endblock content %}

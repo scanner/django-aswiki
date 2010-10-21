@@ -1,0 +1,1 @@
+Your revision {{ revision }} on {{ article }} has been reverted.

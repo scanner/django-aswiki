@@ -1,0 +1,7 @@
+{# A fragment for rendering a Topic's vitals in a table #}
+{# we have the 'topic' in our context. #}
+{% load asutils aswikitags %}
+<td><a href="{{ topic.get_absolute_url }}">{{ topic.name }}</a></td>
+<td>{% username_or_wikipage topic.author %}</td>
+<td>{{ topic.modified|tz_std_date_ago:user }}</td>
+<td>{% if topic.locked %}{% icon "lock" "Topic is locked" %}{% endif %}{% if topic.restricted %}{% icon "key" "Topic is restricted" %}{% endif %}{% ifobserved topic "topic_notify" %}{% icon "eye" "Topic is being watched by you" %}{% endifobserved %}</td>

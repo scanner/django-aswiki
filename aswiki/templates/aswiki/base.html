@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load asutils aswikitags %}
+{% block title %}Wiki{% endblock %}
+{% block content_title %}<h1>Wiki</h1>{% endblock content_title %}
+{% block hierarchy %}{{ block.super }}&raquo;&nbsp;<a href="{% url aswiki_frontpage %}">Wiki</a>{% endblock %}
+{% block leftbox %}
+<div align="left">
+  <h3>Wiki</h3>
+  <form method="GET" id="wikisearch" action="{% url aswiki_topic_index %}">
+    <label for="wikisearch_query">Search:</label>
+    <input type="text" name="q" value="{% if query %}{{ query }}{% endif %}" id="wikisearch_query" />
+  </form>
+  <br />
+  <form method="GET" id="wikigoto" action="{% url aswiki_topic_index %}">
+    <label for="wikigoto_query">Goto/Create:</label><input style="width: 120px;" type="text" name="goto" value="{% if topic %}{{ topic.name }}{% endif %}" id="wikigoto_query" />
+  </form>
+  <p>{% creole %}Wiki Cheat sheet: [[creoleCheatSheet]]{% endcreole %}</p>
+</div>
+<h3>Wiki links</h3>
+<ul class="BLUE">
+  <li><a href="{% url aswiki_topic_index %}">Topic list</a></li>
+  <li><a href="{% url aswiki_nascent_index %}">Nascent topic list</a></li>
+</ul>
+{% endblock %}
+{% block submenu %}
+{% if topic %}
+   <h3>Topic Status</h3>
+   <div>
+     {% if topic.locked %}{% icon "lock" "Topic is locked" %}Topic is locked.<br />{% endif %}
+     {% if topic.restricted %}{% icon "key" "Topic is restricted" %}Topic is restricted.<br />{% endif %}
+     {% if topic.write_locked %}{% icon "lock_edit" "Edit lock"%}Topic is being edited by {% username_or_wikipage topic.write_lock.owner %}<br />{% endif %}
+     {% ifobserved topic "topic_notify" %}{% icon "eye" "Observed" %}Topic is being watched by you.<br />{% endifobserved %}
+   </div>
+
+   {% with topic.image_attachments.all as images %}
+     {% if images %}
+       <h3>Attached Images</h3>
+       <ul>
+         {% for image in images %}
+	  <li><a href="{{ image.get_absolute_url }}">{{ image.basename }}</a></li>
+         {% endfor %}
+       </ul>
+     {% endif %}
+   {% endwith %}
+
+   {% with topic.file_attachments.all as files %}
+     {% if files %}
+       <h3>Attached Files</h3>
+       <ul>
+         {% for file in files %}
+	  <li><a href="{{ file.get_absolute_url }}">{{ file.basename }}</a></li>
+         {% endfor %}
+       </ul>
+     {% endif %}
+   {% endwith %}
+
+{% endif %}
+<h3>Rss feeds</h3>
+<ul class="BLUE">
+  <li>{% icon "feed" "RSS Feed for recent topics" %}<a href="{% url aswiki_feeds "topics" %}">Topic feed</a></li>
+  <li>{% icon "feed" "RSS Feed for recent nascent topics" %}<a href="{% url aswiki_feeds "nascent_topics" %}">Nascent topic feed</a></li>
+</ul>
+{% endblock submenu %}

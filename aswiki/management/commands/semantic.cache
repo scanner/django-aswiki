@@ -1,0 +1,46 @@
+;; Object commands/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "commands/"
+  :tables (list 
+   (semanticdb-table "cleanup_nascent_topics.py"
+    :major-mode 'python-mode
+    :tags '(("\"\"\"
+A management command which deletes nascent topics that should not exist
+(ie: we have topics that exist with the same name as a nascent topic.)
+
+Basicall loops through the NascentTopics, seeing if a Topic exists with
+that name, and if it does, it deletes it.
+
+Also, if a NascentTopic exists that has no Topic's that refer to it,
+we delete it also. It is only Nascent if some topic refers to it.
+\"\"\"" code nil nil [1 402]) ("django.core.management.base" include nil (dependency-file none) [430 483]) ("django.core.management.base" include nil (dependency-file none) [484 536]) ("aswiki.models" include nil (dependency-file none) [556 601]) ("Command" type (:superclasses ("NoArgsCommand") :members (("help" variable nil (reparse-symbol indented_block_body) [773 842]) ("\"actually a command with the same name or because no topic refers to them.\"" code nil (reparse-symbol indented_block_body) [847 922]) ("handle_noargs" function (:arguments (("self" variable nil (reparse-symbol function_parameters) [946 950]) ("options" variable nil (reparse-symbol function_parameters) [952 961]))) (reparse-symbol indented_block_body) [928 1593])) :type "class") nil [739 1593]))
+    :file "cleanup_nascent_topics.py"
+    :pointmax 1595
+    :unmatched-syntax 'nil
+    )
+   (semanticdb-table "rerender_topics.py"
+    :major-mode 'python-mode
+    :tags '(("\"\"\"
+A management command which goes through all of the topics and re-renders
+their content_raw in to content_formatted.
+
+This also causes all of the NascentTopics to be linked, and
+potentially created as well as re-do the inter-linking of referenced
+Topics as well.
+
+Basically loops through the Topics, calling the 'save()' method of the
+topic which will force it to re-render and update its relationship.
+
+This is handy if we change/import the creoleparser. Also, for cleaning
+up older ersions of aswiki where we need to revalidate all inter-topic
+references and create any NascentTopics that should be made.
+\"\"\"" code nil nil [1 614]) ("sys" include nil (dependency-file none) [616 626]) ("django.core.management.base" include nil (dependency-file none) [654 707]) ("django.core.management.base" include nil (dependency-file none) [708 760]) ("aswiki.models" include nil (dependency-file none) [780 825]) ("Command" type (:superclasses ("NoArgsCommand") :members (("help" variable nil (reparse-symbol indented_block_body) [997 1067]) ("\"causes them to be re-rendered and updates their relations to other \"" code nil (reparse-symbol indented_block_body) [1072 1141]) ("\"Topics and to NascentTopics.\"" code nil (reparse-symbol indented_block_body) [1146 1176]) ("handle_noargs" function (:arguments (("self" variable nil (reparse-symbol function_parameters) [1200 1204]) ("options" variable nil (reparse-symbol function_parameters) [1206 1215]))) (reparse-symbol indented_block_body) [1182 1359])) :type "class") nil [963 1359]))
+    :file "rerender_topics.py"
+    :pointmax 1359
+    :unmatched-syntax 'nil
+    )
+   )
+  :file "semantic.cache"
+  :semantic-tag-version "2.0pre4"
+  :semanticdb-version "2.0pre4"
+  )

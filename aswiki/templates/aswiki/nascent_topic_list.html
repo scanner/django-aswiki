@@ -1,0 +1,42 @@
+{% extends "aswiki/base.html" %}
+{% load i18n asutils aswikitags %}
+{% block title %}Nascent Topic List{% endblock title %}
+{# You will likely NEED to override this template with your own #}
+{% block hierarchy %}{{ block.super }}&raquo;&nbsp;<a href="{% url aswiki_nascent_index %}">Nascent Topics</a>{% endblock %}
+{% block content_title %}<h1>Nascent Topic List</h1>{% endblock content_title %}
+{% block content %}
+<p>The Nascent Topic list shows you the list of Topics that have been referred to on some page in this Wiki, but do not actually exist yet. Think of this as a 'to do list' of Topics that still need to be created.</p><p>Clicking on a Topic in this list will bring you to the page where you can create that topic.</p>
+  {% if object_list %}
+    {% if is_paginated %}
+      <div class="paginator">{% paginator %}</div>
+    {% endif %}
+
+    <table class="nascent">
+      <tbody>
+        {% for nascent_topic in object_list %}
+          {% columnize 4 %}
+            <a href="{% url aswiki_topic nascent_topic.name %}">{{ nascent_topic.name }}</a>
+            {% with nascent_topic.topic_set.all as topics %}
+            {% if topics %}<br />Referred to by:<br />
+            <table class="nascent_inner">
+              {% for topic in topics %}
+                {% columnize 2 %}
+                  <a href="{{ topic.get_absolute_url }}">{{ topic.name }}</a>
+                {% endcolumnize %}
+              {% endfor %}
+            </table>
+
+            {% endif %}
+            {% endwith %}
+          {% endcolumnize %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if is_paginated %}
+      <div class="paginator">{% paginator %}</div>
+    {% endif %}
+  {% else %}
+    <p>There are currently no nascent topics.</p>
+  {% endif %}
+{% endblock content %}

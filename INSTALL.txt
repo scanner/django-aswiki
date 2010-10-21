@@ -1,0 +1,8 @@
+To install it, run the following command inside this directory:
+
+    python setup.py install
+
+Note that this application requires Python 2.4 or later, and Django
+1.0 or greater, and Genshi 0.5.1 or newer, and creoleparser 0.5 or
+newer. You can obtain Python from http://www.python.org/ and Django
+from http://www.djangoproject.com/.

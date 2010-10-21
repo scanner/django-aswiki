@@ -1,0 +1,13 @@
+{# This template is used when a topic is embedded in another page #}
+{% load asutils %}
+<div class="wiki_embedded_topic">
+  <div class="wiki_content">
+    {{ topic.content_formatted|safe }}
+  </div>
+  <div class="wiki_info">
+    <label for="wiki_topic_name">Topic name: </label>
+    <a href="{{ topic.get_absolute_url }}">{{ topic.name }}</a><br />
+     Last modified: {{ topic.modified|tz_std_date_ago:user }}<br />
+     {% if topic.reason %}Last edit reason: {{ topic.reason }}<br />{% endif %}
+  </div>
+</div>

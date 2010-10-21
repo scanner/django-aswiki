@@ -1,0 +1,30 @@
+{% extends "aswiki/base.html" %}
+{% load i18n asutils aswikitags %}
+{# You will likely NEED to override this template with your own #}
+{% block title %}{{ topic_version }}{% endblock title %}
+{% block hierarchy %}{{ block.super }}&nbsp;&raquo;&nbsp;<a href="{% url aswiki_topic_index %}">Topics</a>{% topic_hierarchy topic %}&nbsp;&raquo;&nbsp;<a href="{% url aswiki_topic_list_versions topic.name %}">Versions of {{ topic.name }}</a>&nbsp;&raquo;&nbsp;<a href="{{ topic_version.get_absolute_url }}">{{ topic_version }}</a>{% endblock %}
+{% block submenu %}
+<h3>Wiki operations</h3>
+<div class="wiki_controls">
+  <ul>
+    <li>{% if not topic.locked or perms.aswiki.edit_topic %}<a href="{% url aswiki_topic_revert topic.name,topic_version.normalized_created %}">Revert to this version</a>{% else %}Topic is locked{% endif %}</li>
+  </ul>
+</div>
+{% endblock submenu %}
+{% block content_title %}<h1>{{ topic_version }}</h1>{% endblock content_title %}
+{% block content %}
+   <div class="wiki_content">
+     {{ topic_version.content_raw|creole }}
+   </div>
+   <div class="wiki_info">
+     Author: {% username_or_wikipage topic_version.author %}<br />
+     Created: {{ topic_version.created|tz_std_date_ago:user }}<br />
+     {% if topic_version.reason %}Edit reason: {{ topic_version.reason }}<br />{% endif %}
+   </div>
+   {% if diffs_html %}
+   <h2>Diffs between this version and the current version</h2>
+     <div class="wiki_content">
+       {{ diffs_html|safe }}
+     </div>
+   {% endif %}
+{% endblock content %}

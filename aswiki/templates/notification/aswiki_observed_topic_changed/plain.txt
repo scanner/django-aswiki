@@ -1,0 +1,1 @@
+The article {{ observed }} that you observe has changed.

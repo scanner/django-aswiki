@@ -1,0 +1,68 @@
+{% extends "aswiki/base.html" %}
+{% load i18n asutils aswikitags %}
+{# You will likely NEED to override this template with your own #}
+{% block title %}{{ topic.name }}{% endblock title %}
+{% block hierarchy %}{{ block.super }}&raquo;&nbsp;<a href="{% url aswiki_topic_index %}">Topics</a>{% topic_hierarchy topic %}{% endblock %}
+{% block submenu %}
+   <h3>Wiki operations</h3>
+   <div class="wiki_controls">
+     <ul>
+       <li>{% if not topic.locked or perms.aswiki.edit_topic %}<a href="{% url aswiki_topic_edit topic.name %}">Edit</a>{% else %}Topic is locked{% endif %}
+       </li>
+       <li><a href="{% url aswiki_topic_list_versions topic.name %}">Previous Versions</a></li>
+       {% if not topic.locked or perms.aswiki.edit_topic %}
+       <li><a href="{% url aswiki_topic_rename topic.name %}">Rename</a></li>
+       {% endif %}
+       {% if perms.aswiki.delete_topic %}
+         <li><a href="{% url aswiki_topic_delete topic.name %}">Delete</a></li>
+       {% endif %}
+       {% ifobserved topic "topic_notify" %}
+	 <li><a href="{% url aswiki_topic_set_property topic.name %}?op=stop_observing">Stop Watching</a></li>
+       {% else %}
+	 <li><a href="{% url aswiki_topic_set_property topic.name %}?op=observe">Watch</a></li>
+       {% endifobserved %}
+       {% if perms.aswiki.lock_topic %}
+       <li>
+	 {% if topic.locked %}
+	   <a href="{% url aswiki_topic_set_property topic.name %}?op=unlock">Unlock</a>
+	 {% else %}
+	   <a href="{% url aswiki_topic_set_property topic.name %}?op=lock">Lock</a>
+         {% endif %}
+       </li>
+       {% endif %}
+       {# XXX Who is permitted to 'restrict' or 'unrestrict' a topic? #}
+       {% if user.is_staff %}
+         <li>
+           {% if topic.restricted %}
+	     <a href="{% url aswiki_topic_set_property topic.name %}?op=unrestrict">Unrestrict</a>
+           {% else %}
+	     <a href="{% url aswiki_topic_set_property topic.name %}?op=restrict">Restrict</a>
+           {% endif %}
+	 </li>
+       {% endif %}
+       {% if not topic.locked or perms.aswiki.edit_topic %}
+         <li><a href="{% url aswiki_topic_upload_file topic.name %}">Upload file</a></li>
+         <li><a href="{% url aswiki_topic_upload_image topic.name %}">Upload image</a></li>
+       {% endif %}
+     </ul>
+   </div>
+   {{ block.super }}
+{% endblock submenu %}
+
+{% block content_title %}<span class="right">Last modified: {{ topic.modified|tz_std_date_ago:user }}</span><h1>{{ topic.name }}</h1>{% endblock content_title %}
+{% block content %}
+   <div class="wiki_content">
+     {{ topic.content_formatted|safe }}
+   </div>
+   <div class="wiki_info">
+     Author: {% username_or_wikipage topic.author %}<br />
+     Last modified: {{ topic.modified|tz_std_date_ago:user }}<br />
+     {% if topic.reason %}Last edit reason: {{ topic.reason }}<br />{% endif %}
+   </div>
+   <div class="wiki_info">
+     Topics that link to this topic:<br />
+     {% for topic_ref in topic.referenced_by.all %}
+       <a href="{{ topic_ref.get_absolute_url }}">{{ topic_ref.name }}</a>
+     {% endfor %}
+   </div>
+{% endblock content %}

@@ -1,0 +1,15 @@
+;; Object aswiki/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "aswiki/"
+  :tables (list 
+   (semanticdb-table "topic_version.html"
+    :major-mode 'django-html-mode
+    :tags '(("Topics" section nil nil [250 345]) ("Versions of {{ topic.name }}" section nil nil [345 454]) ("{{ topic_version }}" section nil nil [454 559]) ("Wiki operations" section (:members (("Revert to this version" section nil nil [679 894]))) nil [559 894]) ("{{ topic_version }}" section (:members (("Diffs between this version and the current version" section nil nil [1345 1348]))) nil [894 897]))
+    :file "topic_version.html"
+    :pointmax 1516
+    )
+   )
+  :file "semantic.cache"
+  :semantic-tag-version "2.0pre4"
+  :semanticdb-version "2.0pre4"
+  )
