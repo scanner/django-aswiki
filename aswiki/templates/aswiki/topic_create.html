@@ -10,7 +10,7 @@
   <div class="wiki_content">{{ preview|creole }}</div>
 {% endif %}
   <div class="wiki_content_form">
-    <form method="POST" id="form_content" action="{% url aswiki_topic topic_name %}">
+    <form method="POST" id="form_content" action="{% url aswiki_topic topic_name %}">{% csrf_token %}
       {{ form.as_p }}
       <input type="submit" name="submit" value="Create" />
       <input type="submit" name="submit" value="Preview" />

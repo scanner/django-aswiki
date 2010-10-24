@@ -5,7 +5,7 @@
 {% block hierarchy %}{{ block.super }}&nbsp;&raquo;&nbsp;<a href="{% url aswiki_topic_index %}">Topics</a>{% topic_hierarchy topic %}&nbsp;&raquo;&nbsp;<a href="{% url aswiki_topic_list_versions topic.name %}">Versions of {{ topic.name }}</a>&nbsp;&raquo;&nbsp;<a href="{{ topic_version.get_absolute_url }}">{{ topic_version }}</a>&nbsp;&raquo;&nbsp;<a href="{% url aswiki_topic_revert topic.name,topic_version.normalized_created %}">Revert</a>{% endblock %}
 {% block content_title %}<h1>Revert to {{ topic_version }}</h1>{% endblock content_title %}
 {% block content %}
-<form method="post" id="revert" action="{% url aswiki_topic_revert topic.name,topic_version.normalized_created %}">
+<form method="post" id="revert" action="{% url aswiki_topic_revert topic.name,topic_version.normalized_created %}">{% csrf_token %}
   {{ form.as_p }}
   {% ifnotequal topic.write_lock.owner user %}
     <p><strong>NOTE:</strong> Topic is currently being edited by {{ topic.write_lock.owner }}</p>

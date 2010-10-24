@@ -11,7 +11,7 @@
 {% endif %}
 
   <div class="wiki_content_form">
-    <form method="POST" id="form_content" action="{% url aswiki_topic_edit topic.name %}">
+    <form method="POST" id="form_content" action="{% url aswiki_topic_edit topic.name %}">{% csrf_token %}
       {{ form.as_p }}
       {% ifnotequal topic.write_lock.owner user %}
       <p><strong>NOTE:</strong> Topic is currently being edited by {{ topic.write_lock.owner }}</p>

@@ -85,7 +85,7 @@ def creole(text, **kwargs):
     - `text`: The markup text to be rendered
     - `**kwargs`: Required but not used by this function.
     """
-    p = creoleparser.core.Parser(dialect = aswiki.parser.dialect)
+    # p = creoleparser.core.Parser(dialect = aswiki.parser.dialect)
 
     # We need to lock the TOPIC_LIST before we render using this dialect
     # even though in this instance we do nothing with the topic list
@@ -93,7 +93,8 @@ def creole(text, **kwargs):
     #
     try:
         aswiki.parser.TOPIC_LIST.clear_and_lock()
-        text = aswiki.parser.typogrify(p.render(text))
+        # text = aswiki.parser.typogrify(p.render(text))
+        text = aswiki.parser.typogrify(aswiki.parser.parser.render(text))
     finally:
         aswiki.parser.TOPIC_LIST.unlock()
     return text

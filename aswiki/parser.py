@@ -27,7 +27,9 @@ from django.utils.translation import ugettext as _
 
 # 3rd party imports
 #
-import creoleparser
+from creoleparser.dialects import create_dialect, creole10_base, creole11_base
+from creoleparser.core import Parser
+
 from genshi import builder
 
 # We see if we have the 'typogrify' app installed. If we do we will
@@ -267,7 +269,7 @@ def output_attachments(arg_string):
 
 ####################################################################
 #
-def macro_fn(name, arg_string, macro_body, block_type):
+def macro_fn(name, arg_string, macro_body, block_type, environ):
     """
     Handles the macros we define for our version of markup.
 
@@ -276,6 +278,8 @@ def macro_fn(name, arg_string, macro_body, block_type):
     - `arg_string`: The argument string, including any delimiters
     - `macro_body`: The macro body, None for macro with no body.
     - `block_type`: True for block type macros.
+    - `environ`   : The environment object, passed through from
+                    creoleparser.core.Parser class's 'parse()' method.
     """
     name = name.strip().lower()
     arg_string = arg_string.strip()
@@ -313,14 +317,40 @@ def macro_fn(name, arg_string, macro_body, block_type):
 ##
 TOPIC_LIST = TopicList()
 
-dialect = creoleparser.dialects.Creole10(
-    wiki_links_base_url = reverse('aswiki_topic_index'),
-    wiki_links_space_char = '%20',
-    use_additions = True,
-    no_wiki_monospace = False,
-    wiki_links_class_func = class_fn,
-    wiki_links_path_func = TOPIC_LIST.path_fn,
-    macro_func = macro_fn,
-    interwiki_links_base_urls=dict(wikicreole='http://wikicreole.org/wiki/',
-                                   wikipedia='http://wikipedia.org/wiki/',)
-    )
+# dialect = creoleparser.dialects.Creole10(
+#     wiki_links_base_url = reverse('aswiki_topic_index'),
+#     wiki_links_space_char = '%20',
+#     use_additions = True,
+#     no_wiki_monospace = False,
+#     wiki_links_class_func = class_fn,
+#     wiki_links_path_func = TOPIC_LIST.path_fn,
+#     macro_func = macro_fn,
+#     interwiki_links_base_urls=dict(wikicreole='http://wikicreole.org/wiki/',
+#                                    wikipedia='http://wikipedia.org/wiki/',)
+#     )
+
+dialect = Parser(dialect = create_dialect(\
+        creole11_base, 
+        wiki_links_base_url = reverse('aswiki_topic_index'), # NOTE: Make this
+                                                             # a two element
+                                                             # list for images
+                                                             # to be loaded
+                                                             # from a separate
+                                                             # URL
+        wiki_links_space_char = '%20', # NOTE: make this a two element list to
+                                       # give images a different space
+                                       # character.
+        no_wiki_monospace = False,
+        wiki_links_class_func = class_fn,
+        wiki_links_path_func = TOPIC_LIST.path_fn, # NOTE: supports the list
+                                                   # method where the second
+                                                   # element of the list is
+                                                   # used for images.
+        bodied_macros = { },
+        non_bodied_macros = { },
+        macro_func = macro_fn,
+        # custom_markup = (),
+        interwiki_links_base_urls = {
+            'wikicreole' : 'http://wikicreole.org/wiki/',
+            'wikipedia'  :'http://wikipedia.org/wiki/' }
+        ))

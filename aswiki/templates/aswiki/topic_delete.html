@@ -6,7 +6,7 @@
 {% block content_title %}<h1>Delete {{ topic }}</h1>{% endblock content_title %}
 {% block content %}
   <div class="wiki_content_form">
-    <form method="POST" id="form_content" action="{% url aswiki_topic_delete topic.name %}">
+    <form method="POST" id="form_content" action="{% url aswiki_topic_delete topic.name %}">{% csrf_token %}
       <table>
       {{ form.as_table }}
       </table>

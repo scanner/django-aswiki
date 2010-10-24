@@ -828,9 +828,7 @@ class Topic(models.Model):
         #     as the module will already be loaded and this just puts it
         #     in the namespace of this function.
         #
-        import aswiki.parser
-
-        parser = creoleparser.core.Parser(dialect = aswiki.parser.dialect)
+        from  aswiki.parser import parser
 
         # Due to the global nature of aswiki.parser.dialect we need to lock
         # and clear our list of topics it finds when rendering, we must then
