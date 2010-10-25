@@ -329,7 +329,7 @@ TOPIC_LIST = TopicList()
 #                                    wikipedia='http://wikipedia.org/wiki/',)
 #     )
 
-dialect = Parser(dialect = create_dialect(\
+parser = Parser(dialect = create_dialect(\
         creole11_base, 
         wiki_links_base_url = reverse('aswiki_topic_index'), # NOTE: Make this
                                                              # a two element
