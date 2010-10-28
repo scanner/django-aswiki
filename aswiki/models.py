@@ -239,7 +239,7 @@ class NascentTopic(models.Model):
 
     ####################################################################
     #
-    def save(self, force_insert = False, force_update = False):
+    def save(self, *args, **kwargs):
         """
         We override the inherited save method so that we can ensure
         that the lc_name is always filled in and is always correct.
@@ -251,7 +251,7 @@ class NascentTopic(models.Model):
         if not self.valid_name(self.name):
             return
 
-        super(NascentTopic, self).save(force_insert, force_update)
+        super(NascentTopic, self).save(*args, **kwargs)
         return
 
     ####################################################################
@@ -719,8 +719,7 @@ class Topic(models.Model):
 
     ####################################################################
     #
-    def save(self, force_insert = False, force_update = False, render = True,
-             notify = False):
+    def save(self, render = True, notify = False, *args, **kwargs):
         """
         We override the inherited save method. We need to send a
         'topic_created' signal when we create a topic. This lets a
@@ -732,8 +731,6 @@ class Topic(models.Model):
               case here in case it was not.
 
         Arguments:
-        - `force_insert`: - passed through to the parent class method
-        - `force_update`: - passed through to the parent class method
         - `render`: - Should we actually render the content_raw in to
                       content_formatted. This should be set to false if
                       our caller has already pre-rendered the content for us.
@@ -778,7 +775,7 @@ class Topic(models.Model):
             if render:
                 self.prerender_content()
 
-        super(Topic, self).save(force_insert, force_update)
+        super(Topic, self).save(*args, **kwargs)
 
         if new:
             # This call to pre-render content will update all of our
@@ -792,7 +789,7 @@ class Topic(models.Model):
                 # content thinking that the link to itself as a topic
                 # does not exist.
                 #
-                super(Topic, self).save(force_insert, force_update)
+                super(Topic, self).save(*args, **kwargs)
 
             # If this is a new topic we need to send a signal so that
             # various things that happen when a new topic is created are
