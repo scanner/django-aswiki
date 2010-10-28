@@ -1126,7 +1126,7 @@ class Topic(models.Model):
         Arguments:
         - `name`: The topic name to check.
         """
-        if "/" in self.name or ":" in name:
+        if "/" in name or ":" in name:
             return False
         return True
     
