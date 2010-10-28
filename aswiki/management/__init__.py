@@ -5,13 +5,14 @@ Very little happens here. Main purpose is to register some
 notification types if you have the notification app installed.
 """
 from django.db.models.signals import post_syncdb
+from django.conf import settings
 
 # If we are able to import the 'notification' module then attach a
 # hook to the 'post_syncdb' signal that will create a new notice type
 # for aswiki. This lets us hook in to the notification framework to
 # keep track of topic changes.
 #
-try:
+if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
 
     ########################################################################
@@ -27,6 +28,6 @@ try:
     #
     post_syncdb.connect(create_notice_types)
 
-except ImportError:
+else:
     print "Skipping creation of NoticeTypes as notification app not found"
 

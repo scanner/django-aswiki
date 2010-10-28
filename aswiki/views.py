@@ -78,13 +78,28 @@ def topic_list(request, queryset, extra_context = None,
     """
 
     if 'goto' in request.GET:
+        # Can not search for topics with invalid characters in their names
+        #
+        topic_name = request.GET['goto']
+        if not Topic.valid_name(topic_name):
+            msg_user(request.user,_("'%s' is not a valid topic name. Topic "
+                                    "names may not contains ':' or '/'.") \
+                         % topic_name)
+            # Send them back where they came from if we can, otherwise send
+            # them to the topic list.
+            #
+            if 'HTTP_REFERER' in request.META:
+                return HttpResponseRedirect(request.META['HTTP_REFERER'])
+            else:
+                return HttpResponseRedirect(reverse('aswiki_topic_index'))
+            
         # If the user calls this with the parameter 'goto' it is intended
         # to be shortcut for going to that specific topic. This lets us
         # easily goto/create topics from forms. WHat we do is basically
         # redirect to the topic being 'gone to.'
         #
         return HttpResponseRedirect(reverse('aswiki_topic',
-                                            args = [request.GET['goto']]))
+                                            args = [topic_name]))
     elif 'q' in request.GET:
         # If a 'q' parameter was supplied in the URL this means someone wants
         # to filter the topics looking for something.

@@ -36,9 +36,9 @@ except ImportError:
 # If the django-notification app is present then import and we will use this
 # instead of sending email directly.
 #
-try:
+if "notification" in settings.INSTALLED_APPS:
     import notification
-except ImportError:
+else:
     notification = None
 
 # favour django-mailer but fall back to django.core.mail
@@ -245,6 +245,14 @@ class NascentTopic(models.Model):
         that the lc_name is always filled in and is always correct.
         """
         self.lc_name = self.name.lower()
+
+        # Make sure they are not using a topic name that has "/" or "." in it.
+        #
+        if not self.valid_name(self.name):
+            raise BadName("'/' and ':' characters are not allowed in topic "
+                          " names. Use '.' if you want to create a "
+                          "hierarchy of topics.")
+
         super(NascentTopic, self).save(force_insert, force_update)
         return
 
@@ -746,7 +754,7 @@ class Topic(models.Model):
 
         # Make sure they are not using a topic name that has "/" or "." in it.
         #
-        if "/" in self.name or ":" in self.name:
+        if not self.valid_name(self.name):
             raise BadName("'/' and ':' characters are not allowed in topic "
                           " names. Use '.' if you want to create a "
                           "hierarchy of topics.")
@@ -1101,6 +1109,27 @@ class Topic(models.Model):
         topic_renamed.send(sender = self, old_name = old_name)
         return
 
+    ##################################################################
+    #
+    @classmethod
+    def valid_name(cls, name):
+        """
+        Is the given name a valid name for a topic. We do not allow
+        certain characters in our topic name.
+
+        Returns 'True' if name is acceptable, 'False' otherwise.
+        
+        XXX In the future we should probably reencode forbidden
+            characters so that we allow them but they do not cause
+            problems.
+
+        Arguments:
+        - `name`: The topic name to check.
+        """
+        if "/" in self.name or ":" in name:
+            return False
+        return True
+    
     ####################################################################
     #
     @permalink
