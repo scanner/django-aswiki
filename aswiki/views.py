@@ -58,7 +58,7 @@ from aswiki.forms import add_override_field, RevertTopicForm
 # Model imports
 #
 from aswiki.models import Topic, TopicVersion, NORM_TIMESTAMP, TopicExists
-from aswiki.models import FileAttachment, ImageAttachment
+from aswiki.models import FileAttachment, ImageAttachment, BadName
 
 ####################################################################
 #
@@ -564,19 +564,24 @@ def topic_edit(request, topic_name, template_name = 'aswiki/topic_edit.html',
             if submit == 'preview':
                 preview = form.cleaned_data['content']
             else:
-                topic.update_content(request.user, form.cleaned_data['content'],
-                                     reason = reason,
-                                     trivial = form.cleaned_data['trivial'])
-                msg_user(request.user,_("Topic '%s' edited") % topic_name)
+                try:
+                    topic.update_content(request.user,
+                                         form.cleaned_data['content'],
+                                         reason = reason,
+                                         trivial = form.cleaned_data['trivial'])
+                    msg_user(request.user,_("Topic '%s' edited") % topic_name)
 
-                # If we got to this point then we can release the write lock.
-                # We can force this release because no matter what the write
-                # lock is to be released - the user HAD to check the 'override'
-                # field on the form for the form to pass the 'is_valid()' check
-                # since the 'override' field is a required boolean field.
-                #
-                topic.release_write_lock(request.user, force = True)
-                return HttpResponseRedirect(topic.get_absolute_url())
+                    # If we got to this point then we can release the write
+                    # lock.  We can force this release because no matter what
+                    # the write lock is to be released - the user HAD to check
+                    # the 'override' field on the form for the form to pass the
+                    # 'is_valid()' check since the 'override' field is a
+                    # required boolean field.
+                    #
+                    topic.release_write_lock(request.user, force = True)
+                    return HttpResponseRedirect(topic.get_absolute_url())
+                except BadName, e:
+                    msg_user(request.user,e.value)
     else:
         form = form_class({ 'content' : topic.content_raw })
 

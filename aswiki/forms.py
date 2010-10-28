@@ -19,7 +19,8 @@ class TopicForm(forms.Form):
     To post an update to a topic pretty much just requires the new
     content for the topic.
 
-    NOTE: This form is used for both creating and editing topics.
+    XXX This should check to make sure that the wiki markup being used
+        is valid.
     """
     content = forms.CharField(label = _('Content'), required = True,
                               widget = \
@@ -37,7 +38,8 @@ class EditTopicForm(forms.Form):
     To post an update to a topic pretty much just requires the new
     content for the topic.
 
-    NOTE: This form is used for both creating and editing topics.
+    XXX This should check to make sure that the wiki markup being used
+        is valid.
     """
     content = forms.CharField(label = _('Content'), required = True,
                               widget = \

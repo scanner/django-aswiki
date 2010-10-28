@@ -246,12 +246,10 @@ class NascentTopic(models.Model):
         """
         self.lc_name = self.name.lower()
 
-        # Make sure they are not using a topic name that has "/" or "." in it.
+        # Make sure they are not using a topic name that has "/" or ":" in it.
         #
         if not self.valid_name(self.name):
-            raise BadName("'/' and ':' characters are not allowed in topic "
-                          " names. Use '.' if you want to create a "
-                          "hierarchy of topics.")
+            return
 
         super(NascentTopic, self).save(force_insert, force_update)
         return
@@ -850,6 +848,16 @@ class Topic(models.Model):
             extra_references = list(TOPIC_LIST.extra_references)
         finally:
             TOPIC_LIST.unlock()
+
+        # If any topic in the topics list is not a valid name we need
+        # to raise an exception
+        #
+        for t in topics:
+            if not Topic.valid_name(t):
+                raise BadName("The topic '%s' is not a valid topic name. "
+                              "Topic names must not contain ':' or '/'. "
+                              "Use '.' if you want to create a "
+                              "hierarchy of topics." % t)
 
         # Only update all of our topic and nascent topic references
         # if the flag to do so is true.
