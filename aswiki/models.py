@@ -828,20 +828,20 @@ class Topic(models.Model):
         #     as the module will already be loaded and this just puts it
         #     in the namespace of this function.
         #
-        from  aswiki.parser import parser
+        from  aswiki.parser import parser, TOPIC_LIST
 
         # Due to the global nature of aswiki.parser.dialect we need to lock
         # and clear our list of topics it finds when rendering, we must then
         # copy that list and unlock the global TOPIC_LIST.
         #
         try:
-            aswiki.parser.TOPIC_LIST.clear_and_lock()
+            TOPIC_LIST.clear_and_lock()
             self.content_formatted = typogrify(parser.render(self.content_raw))
-            topics = set(aswiki.parser.TOPIC_LIST.topics)
-            topics_case = dict(aswiki.parser.TOPIC_LIST.topics_case)
-            extra_references = list(aswiki.parser.TOPIC_LIST.extra_references)
+            topics = set(TOPIC_LIST.topics)
+            topics_case = dict(TOPIC_LIST.topics_case)
+            extra_references = list(TOPIC_LIST.extra_references)
         finally:
-            aswiki.parser.TOPIC_LIST.unlock()
+            TOPIC_LIST.unlock()
 
         # Only update all of our topic and nascent topic references
         # if the flag to do so is true.
