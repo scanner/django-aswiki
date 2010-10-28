@@ -248,7 +248,7 @@ class NascentTopic(models.Model):
 
         # Make sure they are not using a topic name that has "/" or ":" in it.
         #
-        if not self.valid_name(self.name):
+        if not Topic.valid_name(self.name):
             return
 
         super(NascentTopic, self).save(*args, **kwargs)
@@ -749,7 +749,7 @@ class Topic(models.Model):
 
         # Make sure they are not using a topic name that has "/" or "." in it.
         #
-        if not self.valid_name(self.name):
+        if not Topic.valid_name(self.name):
             raise BadName("'/' and ':' characters are not allowed in topic "
                           " names. Use '.' if you want to create a "
                           "hierarchy of topics.")

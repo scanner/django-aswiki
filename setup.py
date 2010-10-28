@@ -28,7 +28,7 @@ for dirpath, dirnames, filenames in os.walk('aswiki'):
 
 
 setup(name='django-aswiki',
-      version='0.6.6',
+      version='0.6.7',
       description='A wiki for Django',
       author='Eric Scanner Luce',
       author_email='scanner@apricot.com',
