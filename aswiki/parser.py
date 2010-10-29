@@ -14,6 +14,7 @@ we can tell what other topics a given topic refers to.
 # system imports
 #
 from urllib import quote
+from urlparse import urlparse
 
 try:
     import threading
@@ -68,6 +69,11 @@ class TopicList(object):
         Very plain init. We set up the attribute for tracking topics.
         """
 
+        # The current topic that is being rendered, if we know it. This
+        # lets us root image url's relative to this topic.
+        #
+        self.current_topic = None
+
         # The list of topics that we have encountered while rendering
         # some content. This should be reset between renders.
         #
@@ -102,6 +108,7 @@ class TopicList(object):
         # time can add topics to a topic list.
         #
         self.lock = threading.Lock()
+        return
 
     ########################################################################
     #
@@ -126,6 +133,28 @@ class TopicList(object):
         """
         self.lock.release()
         return
+
+    ##################################################################
+    #
+    def image_fn(self, image_name):
+        """
+        This is called by our creole parser every time it hits an
+        image link. This lets us translate image names to be relative
+        to the topic they are found in as appropriate.
+
+        We only apply this magic transformation for images url's that
+        are relative.
+        
+        Arguments:
+        - `image_name`: The name of the image being referenced.
+        """
+        # If the image url is NOT absolute, root it relative to this
+        # topic.
+        #
+        u = urlparse(image_name)
+        if self.current_topic and len(u.path) > 0 and u.path[0] != "/":
+            return self.current_topic + "/" + image_name
+        return image_name
 
     ########################################################################
     #
@@ -342,10 +371,8 @@ parser = Parser(dialect = create_dialect(\
                                        # character.
         no_wiki_monospace = False,
         wiki_links_class_func = class_fn,
-        wiki_links_path_func = TOPIC_LIST.path_fn, # NOTE: supports the list
-                                                   # method where the second
-                                                   # element of the list is
-                                                   # used for images.
+        wiki_links_path_func = (TOPIC_LIST.path_fn,
+                                TOPIC_LIST.image_fn),
         bodied_macros = { },
         non_bodied_macros = { },
         macro_func = macro_fn,

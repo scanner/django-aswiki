@@ -839,11 +839,15 @@ class Topic(models.Model):
         #
         try:
             TOPIC_LIST.clear_and_lock()
-            self.content_formatted = typogrify(parser.render(self.content_raw))
+            TOPIC_LIST.current_topic = self.name
+            self.content_formatted = typogrify(\
+                parser.render(self.content_raw,
+                              environ = TOPIC_LIST))
             topics = set(TOPIC_LIST.topics)
             topics_case = dict(TOPIC_LIST.topics_case)
             extra_references = list(TOPIC_LIST.extra_references)
         finally:
+            TOPIC_LIST.current_topic = None
             TOPIC_LIST.unlock()
 
         # If any topic in the topics list is not a valid name we need

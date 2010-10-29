@@ -22,11 +22,13 @@ from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
+from django.template.defaultfilters import stringfilter
 
 # 3rd party imports
 #
 import creoleparser
-import aswiki.parser
+from aswiki.parser import parser as creole_parser
+from aswiki.parser import TOPIC_LIST, typogrify
 
 # Model imports
 #
@@ -76,8 +78,9 @@ def topic_hierarchy(topic):
 
 ###########################################################################
 #
-@register.filter
-def creole(text, **kwargs):
+@register.filter(name='creole')
+@stringfilter
+def creole(text, topic = None):
     """
     Renders the text rendered by our version of the creole markup parser.
 
@@ -85,18 +88,17 @@ def creole(text, **kwargs):
     - `text`: The markup text to be rendered
     - `**kwargs`: Required but not used by this function.
     """
-    # p = creoleparser.core.Parser(dialect = aswiki.parser.dialect)
-
     # We need to lock the TOPIC_LIST before we render using this dialect
     # even though in this instance we do nothing with the topic list
     # that this text refers to.
     #
     try:
-        aswiki.parser.TOPIC_LIST.clear_and_lock()
-        # text = aswiki.parser.typogrify(p.render(text))
-        text = aswiki.parser.typogrify(aswiki.parser.parser.render(text))
+        TOPIC_LIST.clear_and_lock()
+        TOPIC_LIST.current_topic = topic
+        text = typogrify(creole_parser.render(text, environ = TOPIC_LIST))
     finally:
-        aswiki.parser.TOPIC_LIST.unlock()
+        TOPIC_LIST.current_topic = None
+        TOPIC_LIST.unlock()
     return text
 creole.is_safe = True
 
