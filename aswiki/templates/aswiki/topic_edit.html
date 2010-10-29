@@ -7,7 +7,7 @@
 {% block content %}
 {% if preview %}
   <h2>Preview</h2>
-  <div class="wiki_content">{{ preview|creole }}</div>
+  <div class="wiki_content">{{ preview|creole:topic.name }}</div>
 {% endif %}
 
   <div class="wiki_content_form">
