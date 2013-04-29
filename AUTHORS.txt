@@ -1,6 +1,5 @@
-The primary author of django-registration is Eric 'Scanner' Luce -
-<scanner@apricot.com>
-
+The primary author of django-aswiki is
+Eric 'Scanner' Luce - <scanner@apricot.com>
 
 Others who have contributed to the application:
 

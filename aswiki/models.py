@@ -682,7 +682,7 @@ class Topic(models.Model):
         # Otherwise this write lock could not be deleted.
         #
         return False
-    
+
     ##################################################################
     #
     def permitted(self, user):
@@ -1127,18 +1127,26 @@ class Topic(models.Model):
         certain characters in our topic name.
 
         Returns 'True' if name is acceptable, 'False' otherwise.
-        
+
+        Current list of not allowed strings: '/',':',' '
+
         XXX In the future we should probably reencode forbidden
             characters so that we allow them but they do not cause
             problems.
 
+        XXX: For ' ' since it is probably a very common thing maybe we
+             should establish an equivalence with '_' .. so any topics
+             created with ' ' in them get converted to '_', and any
+             searches or lookups of topics with ' ' in them get
+             converted to '_' too.
+
         Arguments:
         - `name`: The topic name to check.
         """
-        if "/" in name or ":" in name:
+        if any(i in name for i in r'/: '):
             return False
         return True
-    
+
     ####################################################################
     #
     @permalink

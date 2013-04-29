@@ -18,7 +18,8 @@ from urllib import quote, unquote
 # Django imports
 #
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
-from django.views.generic.list_detail import object_list
+from django.views.generic import ListView
+# from django.views.generic.list_detail import object_list
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -59,71 +60,167 @@ from aswiki.forms import add_override_field, RevertTopicForm
 #
 from aswiki.models import Topic, TopicVersion, NORM_TIMESTAMP, TopicExists
 from aswiki.models import FileAttachment, ImageAttachment, BadName
+from aswiki.models import NascentTopic
 
-####################################################################
+########################################################################
+########################################################################
 #
-def topic_list(request, queryset, extra_context = None,
-               template_name = 'aswiki/topic_list.html', **kwargs):
-    """
-    List all of the topics that exist. Basically this is just a
-    wrapper around the generic `object_list` view, however, we may
-    filter the QuerySet we are given if a 'q' parameter is
-    provided. This gives us a simple search mechanism.
+class TopicList(ListView):
+    model = Topic
 
-    Arguments:
-    - `request`: The django http request object.
-    - `queryset`: The queryset of Topics to list.
-    - `**kwargs`: Everything else that we just pass through to the object_list
-                  function.
-    """
+    ####################################################################
+    #
+    def get(self, request, *args, **kwargs):
+        """
+        We catch 'get' because if the 'goto' parameter is specified then
+        instead of returning a list of topics we redirect them to the one
+        specified in the 'goto' parameter by its name (but it has to be a valid
+        name (not a topic that necessarily exists, because this is how you
+        create new topics.))
 
-    if 'goto' in request.GET:
-        # Can not search for topics with invalid characters in their names
-        #
-        topic_name = request.GET['goto']
-        if not Topic.valid_name(topic_name):
-            msg_user(request.user,_("'%s' is not a valid topic name. Topic "
-                                    "names may not contains ':' or '/'.") \
-                         % topic_name)
-            # Send them back where they came from if we can, otherwise send
-            # them to the topic list.
+        Arguments:
+        - `request`:
+        """
+        if 'goto' in request.GET:
+            # Can not search for topics with invalid characters in their names
             #
-            if 'HTTP_REFERER' in request.META:
-                return HttpResponseRedirect(request.META['HTTP_REFERER'])
-            else:
-                return HttpResponseRedirect(reverse('aswiki_topic_index'))
-            
-        # If the user calls this with the parameter 'goto' it is intended
-        # to be shortcut for going to that specific topic. This lets us
-        # easily goto/create topics from forms. WHat we do is basically
-        # redirect to the topic being 'gone to.'
+            topic_name = request.GET['goto']
+            if not Topic.valid_name(topic_name):
+                msg_user(request.user,_("'%s' is not a valid topic name. Topic "
+                                        "names may not contains ':' or '/'.") \
+                             % topic_name)
+                # Send them back where they came from if we can, otherwise send
+                # them to the topic list.
+                #
+                if 'HTTP_REFERER' in request.META:
+                    return HttpResponseRedirect(request.META['HTTP_REFERER'])
+                else:
+                    return HttpResponseRedirect(reverse('aswiki_topic_index'))
+
+            # If the user calls this with the parameter 'goto' it is intended
+            # to be shortcut for going to that specific topic. This lets us
+            # easily goto/create topics from forms. WHat we do is basically
+            # redirect to the topic being 'gone to.'
+            #
+            return HttpResponseRedirect(reverse('aswiki_topic',
+                                                args = [topic_name]))
+
+        # Otherwise fall back to our parent class's 'get()' method to do the
+        # rest of the work.
         #
-        return HttpResponseRedirect(reverse('aswiki_topic',
-                                            args = [topic_name]))
-    elif 'q' in request.GET:
-        # If a 'q' parameter was supplied in the URL this means someone wants
-        # to filter the topics looking for something.
+        return super(TopicList, self).get(request, *args, **kwargs)
+
+    ####################################################################
+    #
+    def get_queryset(self):
+        """
+        When getting a list of topics the list we return can be with a 'q'
+        parameter that will return only topics that have the value of the 'q'
+        parameter in its name, content, or 'reason' attribute. (Case
+        insensitive)
+        """
+
+        # If there is a filtering query parameter then use that to build the
+        # queryset for this invocation.
         #
         # XXX There is a problem here in that this search will also look inside
         #     of Topics that may be restricted to the current user. So you can
         #     find topics that have certain phrases in them, although you still
         #     can not actually view the topic.
         #
-        q = request.GET['q']
-        queryset = queryset.filter(Q(content_raw__icontains = q) | \
+        if 'q' in request.GET:
+            q = request.GET['q']
+            return self.queryset.filter(Q(content_raw__icontains = q) | \
                                        Q(reason__icontains = q) | \
                                        Q(name__icontains = q))
 
-        # We also stick the query itself in to the context so that our template
-        # can display it.
+        # Otherwise return the default queryset
         #
-        if extra_context is None:
-            extra_context = { 'query' : q}
-        else:
-            extra_context['query'] = q
+        return super(TopicList,self).get_queryset()
 
-    return object_list(request, queryset, extra_context = extra_context,
-                       template_name = template_name, **kwargs)
+    ####################################################################
+    #
+    def get_context_data(self, **kwargs):
+        """
+        If there was a 'q' parameter then pass it back in to the context. This
+        is so that the view can display the query that was used for the list of
+        topics if one was selected.
+
+        Arguments:
+        - `**kwargs`:
+        """
+        # Call the base implementation first to get the context. If there was a
+        # 'q' parameter set it in the context.
+        #
+        context = super(TopicList, self).get_context_data(**kwargs)
+        if 'q' in request.GET:
+            context['q'] = request.GET['q']
+        return context
+
+# ####################################################################
+# #
+# def topic_list(request, queryset, extra_context = None,
+#                template_name = 'aswiki/topic_list.html', **kwargs):
+#     """
+#     List all of the topics that exist. Basically this is just a
+#     wrapper around the generic `object_list` view, however, we may
+#     filter the QuerySet we are given if a 'q' parameter is
+#     provided. This gives us a simple search mechanism.
+
+#     Arguments:
+#     - `request`: The django http request object.
+#     - `queryset`: The queryset of Topics to list.
+#     - `**kwargs`: Everything else that we just pass through to the object_list
+#                   function.
+#     """
+
+#     if 'goto' in request.GET:
+#         # Can not search for topics with invalid characters in their names
+#         #
+#         topic_name = request.GET['goto']
+#         if not Topic.valid_name(topic_name):
+#             msg_user(request.user,_("'%s' is not a valid topic name. Topic "
+#                                     "names may not contains ':' or '/'.") \
+#                          % topic_name)
+#             # Send them back where they came from if we can, otherwise send
+#             # them to the topic list.
+#             #
+#             if 'HTTP_REFERER' in request.META:
+#                 return HttpResponseRedirect(request.META['HTTP_REFERER'])
+#             else:
+#                 return HttpResponseRedirect(reverse('aswiki_topic_index'))
+
+#         # If the user calls this with the parameter 'goto' it is intended
+#         # to be shortcut for going to that specific topic. This lets us
+#         # easily goto/create topics from forms. WHat we do is basically
+#         # redirect to the topic being 'gone to.'
+#         #
+#         return HttpResponseRedirect(reverse('aswiki_topic',
+#                                             args = [topic_name]))
+#     elif 'q' in request.GET:
+#         # If a 'q' parameter was supplied in the URL this means someone wants
+#         # to filter the topics looking for something.
+#         #
+#         # XXX There is a problem here in that this search will also look inside
+#         #     of Topics that may be restricted to the current user. So you can
+#         #     find topics that have certain phrases in them, although you still
+#         #     can not actually view the topic.
+#         #
+#         q = request.GET['q']
+#         queryset = queryset.filter(Q(content_raw__icontains = q) | \
+#                                        Q(reason__icontains = q) | \
+#                                        Q(name__icontains = q))
+
+#         # We also stick the query itself in to the context so that our template
+#         # can display it.
+#         #
+#         if extra_context is None:
+#             extra_context = { 'query' : q}
+#         else:
+#             extra_context['query'] = q
+
+#     return object_list(request, queryset, extra_context = extra_context,
+#                        template_name = template_name, **kwargs)
 
 ###########################################################################
 #
@@ -225,7 +322,7 @@ def topic(request, topic_name, template_name = 'aswiki/topic.html',
 def topic_attachment(request, topic_name, attachment_name,
                      extra_context = None, **kwargs):
     """
-    
+
     Arguments:
     - `request`: Django request object.
     - `topic_name`: The name of the topic to display.
@@ -398,7 +495,7 @@ def topic_upload_image(request, topic_name, extra_context = None,
     XXX This and _upload_attachment need to be refactored because they share
         some common code. There should probably only be one of these
         views.
-    
+
     Arguments:
     - `request`: Django request object.
     - `topic_name`: The name of the topic to display.
@@ -461,41 +558,84 @@ def topic_upload_image(request, topic_name, extra_context = None,
                                                           'topic' : topic},
                                 extra_context, **kwargs)
 
-###########################################################################
+########################################################################
+########################################################################
 #
-def topic_list_versions(request, topic_name, extra_context = None,
-                        template_name = 'aswiki/topic_list_versions.html',
-                        **kwargs):
+class TopicListVersions(ListView):
     """
     Present a list/browser of the various versions of this topic,
     hopefully in a useful display.
-
-    Arguments:
-    - `request`: Django request object.
-    - `topic_name`: The name of the topic to display.
-    - `template_name`: Path to the template to use.
-    - `extra_context`: Dictionary of extra context data to pass to the template.
     """
-    topic = get_object_or_404(Topic, name__iexact = topic_name)
+    model = TopicVersion
+    template_name = 'aswiki/topic_list_versions.html'
 
-    # If the user does not have permission to see this topic
-    # then we return a permission denied.
+    ####################################################################
     #
-    if not topic.permitted(request.user):
-        return HttpResponseForbidden(_u("Sorry. You do not have sufficient "
-                                       "permissions to view this topic."))
+    def get(self, request, *args, **kwargs):
+        """
+        Our permission check to make sure they have the required access to the
+        topic to access its versions.
 
-    # XXX We get versions here instead of in the template in case we later
-    #     need to restrict the versions you can get due to permissions
-    #     or something.
-    versions = topic.versions.all()
+        Arguments:
+        - `request`:
+        - `*args`:
+        - `**kwargs`:
+        """
+        # If the user does not have permission to see this topic
+        # then we return a permission denied.
+        #
+        if not self.topic.permitted(request.user):
+            return HttpResponseForbidden(_u("Sorry. You do not have sufficient "
+                                           "permissions to view this topic."))
 
-    if extra_context is None:
-        extra_context = {}
-    extra_context['topic'] = topic
+        return super(TopicListView, self).get(request, *args, **kwargs)
 
-    return object_list(request, versions, template_name = template_name,
-                       extra_context = extra_context, **kwargs)
+    ####################################################################
+    #
+    def get_queryset(self):
+        """
+        Limit the topic versions we get based on the topic we are getting them
+        for.
+        """
+        self.topic = get_object_or_404(Topic, name__iexact = self.args[0])
+
+        return topic.versions.all()
+
+# ###########################################################################
+# #
+# def topic_list_versions(request, topic_name, extra_context = None,
+#                         template_name = 'aswiki/topic_list_versions.html',
+#                         **kwargs):
+#     """
+#     Present a list/browser of the various versions of this topic,
+#     hopefully in a useful display.
+
+#     Arguments:
+#     - `request`: Django request object.
+#     - `topic_name`: The name of the topic to display.
+#     - `template_name`: Path to the template to use.
+#     - `extra_context`: Dictionary of extra context data to pass to the template.
+#     """
+#     topic = get_object_or_404(Topic, name__iexact = topic_name)
+
+#     # If the user does not have permission to see this topic
+#     # then we return a permission denied.
+#     #
+#     if not topic.permitted(request.user):
+#         return HttpResponseForbidden(_u("Sorry. You do not have sufficient "
+#                                        "permissions to view this topic."))
+
+#     # XXX We get versions here instead of in the template in case we later
+#     #     need to restrict the versions you can get due to permissions
+#     #     or something.
+#     versions = topic.versions.all()
+
+#     if extra_context is None:
+#         extra_context = {}
+#     extra_context['topic'] = topic
+
+#     return object_list(request, versions, template_name = template_name,
+#                        extra_context = extra_context, **kwargs)
 
 ###########################################################################
 #
@@ -896,7 +1036,7 @@ def topic_revert(request, topic_name, created,
     to revert the topic to this version.
 
     If called with a POST, reverts the topic to this version.
-    
+
     Arguments:
     - `request`: Django request object.
     - `topic_name`: The name of the topic to display.
@@ -1096,3 +1236,49 @@ def topic_version(request, topic_name, created,
                                   'topic' : topic },
                                 extra_context)
 
+########################################################################
+########################################################################
+#
+class NascentTopicList(ListView):
+    """
+    A list of nascent topics: nscent topics are ones that do not exist yet but
+    another topic refers to them by name.. we provide views that let you browse
+    these nascent topics so you can see what still needs to be created.
+
+    ``template_name``
+        The name of the template to use for displaying the list of nascent
+        topics. If not specified, this will default to
+        :template:`aswiki/nascent_topic_list.html`.
+
+    Additionally, all arguments accepted by the
+    :view:`django.views.generic.list.ListView` generic view
+    will be accepted here, and applied in the same fashion.
+
+    **Template:**
+
+    ``template_name`` keyword argument
+
+    """
+    model = NascentTopic
+
+    ####################################################################
+    #
+    def __init__(self, paginate_by = 40, **kwargs):
+        """
+        """
+        self.paginate_by = paginate_by
+        super(NascentTopicList, self).__init__(**kwargs)
+        return
+
+    ####################################################################
+    #
+    def get_context_data(self, **kwargs):
+        """
+        Add our 'paginate_by' setting to the request context.
+        """
+        # Call the base implementation first to get a context and add our
+        # paginate_by parameter to it.
+        #
+        context = super(NascentTopicList, self).get_context_data(**kwargs)
+        context['paginate_by'] = self.paginate_by
+        return context

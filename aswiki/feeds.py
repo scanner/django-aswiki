@@ -5,7 +5,7 @@ RSS/Atom Feeds for our aswiki
 # Django imports
 #
 from django.core.urlresolvers import reverse
-from django.contrib.syndication.feeds import Feed
+from django.contrib.syndication.views import Feed
 
 # Model imports
 #

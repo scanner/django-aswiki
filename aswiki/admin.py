@@ -10,12 +10,19 @@ from django.contrib import admin
 from aswiki.models import Topic, TopicVersion, NascentTopic
 from aswiki.models import ImageAttachment, FileAttachment, WriteLock
 
+# from asutils.models import ObjectPermission, ObjectPermissionInline,\
+#     ObjectPermissionMixin
+
 ###########################################################################
 #
+# XXX Perhaps we should sub-class admin.ModelAdmin instead of using a mixin.
+#
+# class TopicAdmin(ObjectPermissionMixin, admin.ModelAdmin):
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('name', 'modified', 'author')
     list_filter = ('restricted', 'modified', 'locked')
     search_fields = ('name', 'author__username', 'content_raw', 'reason')
+    # inlines = [ObjectPermissionInline]
 
 ###########################################################################
 #

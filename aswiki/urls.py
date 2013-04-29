@@ -13,8 +13,7 @@ URLConf to include this URLConf for any URL beginning with
 #
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.views.generic.list_detail import object_list
-from django.contrib.syndication.views import feed
+# from django.contrib.syndication.views import feed
 
 # Model imports
 #
@@ -24,6 +23,7 @@ from aswiki.models import Topic, NascentTopic
 # aswiki imports
 #
 from aswiki.feeds import LatestTopicFeed, LatestNascentTopicFeed
+from aswiki import views
 
 # If we have the 'asutils.middleware.RequireLogin' middleware then by
 # default all of our views will require users to be logged in. This will
@@ -32,21 +32,21 @@ from aswiki.feeds import LatestTopicFeed, LatestNascentTopicFeed
 # to authenticate a user. This is a bit backwards as we have to allow
 # anonymous wrapped around the function that requires HTTP basic auth.
 #
-if 'asutils.middleware.RequireLogin' in settings.MIDDLEWARE_CLASSES:
-    try:
-        from asutils.decorators import view_or_basicauth
-        from asutils.middleware import allow_anonymous
+# if 'asutils.middleware.RequireLogin' in settings.MIDDLEWARE_CLASSES:
+#     try:
+#         from asutils.decorators import view_or_basicauth
+#         from asutils.middleware import allow_anonymous
 
-        @allow_anonymous
-        def basic_auth_feed(request, url, feed_dict = None):
-            args = (url,)
-            kwargs = { 'feed_dict' : feed_dict }
-            return view_or_basicauth(feed, request,
-                                     lambda u: u.is_authenticated(),
-                                     *args, **kwargs)
-    except ImportError:
-        def basic_auth_feed(request, url, feed_dict = None):
-            return feed(request, url, feed_dict)
+#         @allow_anonymous
+#         def basic_auth_feed(request, url, feed_dict = None):
+#             args = (url,)
+#             kwargs = { 'feed_dict' : feed_dict }
+#             return view_or_basicauth(feed, request,
+#                                      lambda u: u.is_authenticated(),
+#                                      *args, **kwargs)
+#     except ImportError:
+#         def basic_auth_feed(request, url, feed_dict = None):
+#             return feed(request, url, feed_dict)
 
 
 
@@ -116,7 +116,7 @@ urlpatterns = patterns(
     url(r'^topic/(?P<topic_name>[^/]+)/upload_image/$',
         'aswiki.views.topic_upload_image',
         name = 'aswiki_topic_upload_image'),
-    
+
     # A user may wish to browse the versions of a topic. Note, this
     # differs from the previous url by having a trailing '/' (We can do this
     # because topic names will always be url encoded including the '/'
@@ -182,20 +182,17 @@ urlpatterns = patterns(
 
     # And our simple feeds.. topic index and nascent topic index.
     #
-    url(r'^feeds/(?P<url>.*)/$',
-        basic_auth_feed,
-        {'feed_dict': feeds},
-        name = 'aswiki_feeds'),
+    # url(r'^feeds/(?P<url>.*)/$',
+    #     basic_auth_feed,
+    #     {'feed_dict': feeds},
+    #     name = 'aswiki_feeds'),
 
     # Nascent topics are ones that do not exist yet but another topic refers
     # to them by name.. we provide views that let you browse these nascent
     # topics so you can see what still needs to be created.
     #
     url(r'^nascent/$',
-        object_list,
-        { 'template_name' : 'aswiki/nascent_topic_list.html',
-          'queryset'      : NascentTopic.objects.all(),
-          'paginate_by'   : 40},
-        name = 'aswiki_nascent_index'),
-
+        views.NascentTopicList.as_view(
+            template_name='aswiki/nascent_topic_list.html'),
+        name='aswiki_nascent_index'),
     )
