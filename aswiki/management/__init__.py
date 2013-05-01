@@ -13,15 +13,14 @@ from django.conf import settings
 # keep track of topic changes.
 #
 if "notification" in settings.INSTALLED_APPS:
-    from notification import models as notification
+    from notification.models import NoticeType
 
     ########################################################################
     #
     def create_notice_types(sender, **kwargs):
-        notification.create_notice_type("aswiki_topic_change",
-                                        "Topic Change",
-                                        "A Topic you are following has "
-                                        "changed.")
+        NoticeType.create("aswiki_topic_change",
+                          "Topic Change",
+                          "A Topic you are following has changed.")
         return
 
     ########################################################################

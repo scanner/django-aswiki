@@ -44,5 +44,6 @@ setup(name='django-aswiki',
                    'Programming Language :: Python',
                    'Topic :: Utilities'],
       install_requires=['Creoleparser>=0.7.3',
-                        'Django>=1.2'],
+                        'Django>=1.5',
+                        'pytz>=2013b'],
       )
